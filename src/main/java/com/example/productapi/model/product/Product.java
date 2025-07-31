@@ -1,7 +1,10 @@
 package com.example.productapi.model.product;
 
+import com.example.productapi.dto.RequestProduct;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 
 @Table(name = "product")
 @Entity(name = "product")
@@ -16,5 +19,10 @@ public class Product {
 
     private String name;
 
-    private Number price_in_cents;
+    private BigDecimal price_in_cents;
+
+    public Product(RequestProduct data) {
+        this.name = data.name();
+        this.price_in_cents = BigDecimal.valueOf(data.price_in_cents());
+    }
 }
