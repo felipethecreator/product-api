@@ -3,6 +3,7 @@ package com.example.productapi.controllers;
 import com.example.productapi.ProductApiApplication;
 import com.example.productapi.dto.RequestProduct;
 import com.example.productapi.model.product.Product;
+import com.example.productapi.services.ProductService;
 import jakarta.validation.Valid;
 import com.example.productapi.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -17,9 +19,13 @@ import java.util.Optional;
 public class ProductController {
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private ProductService productService;
+
     @GetMapping
-    public ResponseEntity GetAllProducts() {
-        var allProducts = productRepository.findAll();
+    public ResponseEntity<List<Product>> GetAllProducts() {
+        var allProducts = productService.getAllProducts();
         return ResponseEntity.ok(allProducts);
     }
 
