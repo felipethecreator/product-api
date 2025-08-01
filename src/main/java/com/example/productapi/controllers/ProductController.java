@@ -52,4 +52,13 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
 
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> DeleteProduct(@PathVariable String id) {
+        if (productRepository.existsById(id)) {
+            productRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 }
