@@ -1,22 +1,41 @@
 package com.example.productapi.controllers;
 
+import com.example.productapi.ProductApiApplication;
 import com.example.productapi.dto.RequestProduct;
 import com.example.productapi.model.product.Product;
+import com.example.productapi.services.ProductService;
 import jakarta.validation.Valid;
 import com.example.productapi.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/product")
 public class ProductController {
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private ProductService productService;
+
     @GetMapping
-    public ResponseEntity GetAllProducts() {
-        var allProducts = productRepository.findAll();
+    public ResponseEntity<List<Product>> GetAllProducts() {
+        var allProducts = productService.getAllProducts();
         return ResponseEntity.ok(allProducts);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity GetProductById(@PathVariable String id) {
+        Optional<Product> product = productRepository.findById(id);
+        if (product.isPresent()) {
+            return ResponseEntity.ok(product.get());
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
@@ -25,5 +44,27 @@ public class ProductController {
         System.out.println(data);
         productRepository.save(newProduct);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity UpdateProduct(@PathVariable String id, @RequestBody @Valid RequestProduct data) {
+        return productRepository.findById(id)
+                .map(existingProduct -> {
+                    existingProduct.setName(data.name());
+                    existingProduct.setPrice_in_cents(BigDecimal.valueOf(data.price_in_cents()));
+                    Product updatedProduct = productRepository.save(existingProduct);
+                    return ResponseEntity.ok(updatedProduct);
+                })
+                .orElse(ResponseEntity.notFound().build());
+
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> DeleteProduct(@PathVariable String id) {
+        if (productRepository.existsById(id)) {
+            productRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
