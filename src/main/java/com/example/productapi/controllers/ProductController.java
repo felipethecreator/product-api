@@ -17,8 +17,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/product")
 public class ProductController {
-    @Autowired
-    private ProductRepository productRepository;
 
     @Autowired
     private ProductService productService;
@@ -31,40 +29,38 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity GetProductById(@PathVariable String id) {
-        Optional<Product> product = productRepository.findById(id);
-        if (product.isPresent()) {
-            return ResponseEntity.ok(product.get());
+        try {
+            var product = productService.getProductById(id);
+            return ResponseEntity.ok(product);
+        } catch (Exception ex) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    public ResponseEntity CreateProduct(@RequestBody @Valid RequestProduct data) {
-        Product newProduct = new Product(data);
-        System.out.println(data);
-        productRepository.save(newProduct);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Product> CreateProduct(@RequestBody @Valid RequestProduct data) {
+        var newProduct = productService.addProduct(data);
+        return ResponseEntity.ok(newProduct);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity UpdateProduct(@PathVariable String id, @RequestBody @Valid RequestProduct data) {
-        return productRepository.findById(id)
-                .map(existingProduct -> {
-                    existingProduct.setName(data.name());
-                    existingProduct.setPrice_in_cents(BigDecimal.valueOf(data.price_in_cents()));
-                    Product updatedProduct = productRepository.save(existingProduct);
-                    return ResponseEntity.ok(updatedProduct);
-                })
-                .orElse(ResponseEntity.notFound().build());
-
+        try {
+            ProductService productService = new ProductService();
+            var product = productService.updateProduct(id, data);
+            return ResponseEntity.ok(product);
+        } catch (Exception error) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> DeleteProduct(@PathVariable String id) {
-        if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
+        try {
+            productService.deleteProduct(id);
             return ResponseEntity.ok().build();
+        } catch (Exception error) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 }
